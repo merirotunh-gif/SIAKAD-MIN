@@ -9,17 +9,20 @@ ini_set('display_errors', 1);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Akademik - SIKAD MIN</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            /* FONT MODERN & ELEGAN */
+            font-family: 'Poppins', sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
-            padding: 30px 20px;
+            padding: 40px 20px;
         }
 
         .container {
@@ -31,42 +34,43 @@ ini_set('display_errors', 1);
             text-align: center;
             color: #ffffff;
             margin-bottom: 40px;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            letter-spacing: 1px;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            letter-spacing: 2px;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.95);
+            background: #ffffff;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            padding: 35px;
             margin-bottom: 30px;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
         }
 
         .card h3 {
-            color: #667eea;
-            margin-bottom: 20px;
-            font-size: 20px;
+            color: #1e3c72;
+            margin-bottom: 25px;
+            font-size: 24px;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
         }
 
         .info-row {
             display: flex;
-            margin-bottom: 12px;
-            font-size: 15px;
+            margin-bottom: 15px;
+            font-size: 17px;
         }
 
         .label {
@@ -76,72 +80,74 @@ ini_set('display_errors', 1);
         }
 
         .value {
-            color: #2d3748;
-            font-weight: 500;
+            color: #2c3e50;
+            font-weight: 400;
         }
 
         table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            border-radius: 12px;
+            margin-top: 25px;
+            margin-bottom: 25px;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         }
 
         table th, table td {
-            padding: 15px;
+            padding: 18px;
             text-align: left;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 15px;
         }
 
         table th {
-            background: linear-gradient(to right, #667eea, #764ba2);
+            background: linear-gradient(to right, #1e3c72, #2a5298);
             color: white;
             font-weight: 600;
+            font-size: 16px;
         }
 
         table tr:hover {
-            background-color: #f8f5ff;
+            background-color: #f8f9fa;
         }
 
         .ipk-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 15px;
             text-align: center;
-            font-size: 20px;
-            font-weight: bold;
+            font-size: 24px;
+            font-weight: 700;
             margin-top: 20px;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 20px rgba(30, 60, 114, 0.3);
         }
 
         .role-badge {
             display: inline-block;
-            padding: 6px 15px;
+            padding: 7px 20px;
             border-radius: 30px;
-            font-size: 13px;
-            font-weight: bold;
+            font-size: 14px;
+            font-weight: 600;
             color: white;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
 
         .role-mahasiswa {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
         }
 
         .role-dosen {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            background: linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%);
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📚 SISTEM AKADEMIK - SIKAD MIN</h1>
+    <h1>📚 SISTEM AKADEMIK</h1>
 
     <?php
     require_once 'User.php';
