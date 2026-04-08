@@ -1,320 +1,339 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+session_start();
+
+// --- KONSEP OOP DITERAPKAN DISINI ---
+
+// 1. INTERFACE (Wajib ada method cetak())
+interface CetakLaporan {
+    public function cetak();
+}
+
+// 2. ABSTRACT CLASS (Kelas Induk)
+abstract class DataAkademik {
+    protected $nama;
+    protected $nim;
+    
+    abstract public function getInfo();
+}
+
+// 3. CLASS MAHASISWA (Turunan & Implementasi)
+class Mahasiswa extends DataAkademik implements CetakLaporan {
+    private $semester; // ENCAPSULATION (Private)
+    
+    public function __construct($nama, $nim, $semester) {
+        $this->nama = $nama;
+        $this->nim = $nim;
+        $this->semester = $semester;
+    }
+    
+    public function getInfo() {
+        return "Nama: $this->nama, NIM: $this->nim";
+    }
+    
+    public function cetak() {
+        echo "<tr>
+                <td>{$this->nim}</td>
+                <td>{$this->nama}</td>
+                <td>{$this->semester}</td>
+              </tr>";
+    }
+}
+
+// 4. CLASS MATA KULIAH
+class MataKuliah {
+    private $kode;
+    private $namaMatkul;
+    private $sks;
+    
+    public function __construct($kode, $nama, $sks) {
+        $this->kode = $kode;
+        $this->namaMatkul = $nama;
+        $this->sks = $sks;
+    }
+    
+    // POLYMORPHISM (Overloading sederhana)
+    public function tampil($mode = 'list') {
+        if($mode == 'list') {
+            echo "<tr>
+                    <td>$this->kode</td>
+                    <td>$this->namaMatkul</td>
+                    <td>$this->sks</td>
+                  </tr>";
+        }
+    }
+}
+
+// 5. CLASS NILAI
+class Nilai {
+    public $matkul;
+    public $angka;
+    
+    public function __construct($matkul, $angka) {
+        $this->matkul = $matkul;
+        $this->angka = $angka;
+    }
+    
+    public function getHuruf() {
+        if($this->angka >= 90) return 'A';
+        elseif($this->angka >= 85) return 'A-';
+        else return 'A';
+    }
+}
+
+// --- LOGIKA LOGIN & LOGOUT ---
+if(isset($_POST['login'])) {
+    $user = $_POST['username'];
+    $pass = $_POST['password'];
+    if($user == 'admin' && $pass == 'admin') {
+        $_SESSION['login'] = true;
+        $_SESSION['user'] = $user;
+        header("Location: index.php");
+    } else {
+        echo "<script>alert('Username atau Password Salah!');</script>";
+    }
+}
+
+if(isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: index.php");
+}
 ?>
-<!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Akademik - SIAKAD</title>
+    <title>SIAKAD - Sistem Informasi Akademik</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
         body {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            padding: 30px 20px;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        /* ===================================== */
-        /* === STYLE BAGIAN DEPAN (INTRO) === */
-        /* ===================================== */
-        .hero-section {
-            text-align: center;
-            padding: 60px 20px;
+            font-family: Arial, sans-serif;
+            background-color: #16A085;
             color: white;
-            margin-bottom: 30px;
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: 20px;
+            padding: 20px;
+            margin: 0;
         }
-
-        .hero-section h1 {
-            font-size: 65px;
-            font-weight: 800; /* TEBAL BANGET */
-            letter-spacing: 8px;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-
-        .hero-section p {
-            font-size: 16px;
-            font-weight: 300; /* LEBIH TIPIS */
-            opacity: 0.9;
-            letter-spacing: 1px;
-        }
-
-        /* ===================================== */
-        /* === STYLE MENU NAVIGASI === */
-        /* ===================================== */
-        .navbar {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 12px;
-            border-radius: 15px;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-        }
-
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 25px; /* DIPERLEBAR */
+        .box {
+            background: white;
+            color: black;
+            padding: 25px;
+            margin: 15px auto;
             border-radius: 8px;
-            font-weight: 500;
-            text-transform: uppercase; /* DIUBAH JADI HURUF BESAR */
-            font-size: 14px;
-            transition: all 0.3s ease;
+            max-width: 850px;
         }
-
-        .navbar a:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        /* ===================================== */
-        /* === STYLE BOX MENU UTAMA === */
-        /* ===================================== */
-        .menu-title {
-            color: #f0f0f0;
-            font-size: 20px;
-            margin-bottom: 20px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .menu-box {
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid #ffffff;
-            border-radius: 15px;
-            padding: 35px 20px; /* DITAMBAH PADDING BIAR GAK MEPET */
+        .header {
             text-align: center;
+            padding: 20px;
+        }
+        .menu {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .menu a {
+            display: inline-block;
+            background: #0E6655;
             color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            min-height: 120px; /* TINGGI BOX DISEMAKIN KEREN */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 10px 18px;
+            margin: 5px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
         }
-
-        .menu-box:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.25);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-
-        .menu-box h3 {
-            font-size: 17px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            line-height: 1.4;
-        }
-
-        /* ===================================== */
-        /* === STYLE KONTEN DATA === */
-        /* ===================================== */
-        .content {
-            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-            padding: 35px;
-        }
-
-        .content h3 {
-            color: #1e3c72;
-            margin-bottom: 25px;
-            font-size: 24px;
-            font-weight: 700;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #f0f0f0;
-        }
-
-        .info-row {
-            display: flex;
-            margin-bottom: 12px;
-            font-size: 16px;
-        }
-
-        .label {
-            font-weight: 600;
-            color: #555;
-            min-width: 130px;
-        }
-
-        .value {
-            color: #2c3e50;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-top: 15px;
         }
-
-        table th, table td {
-            padding: 15px;
+        table, th, td {
+            border: 1px solid #aaa;
+        }
+        th, td {
+            padding: 10px;
             text-align: left;
-            border-bottom: 1px solid #ecf0f1;
         }
-
-        table th {
-            background: linear-gradient(to right, #1e3c72, #2a5298);
+        th {
+            background-color: #16A085;
             color: white;
-            font-weight: 600;
         }
-
-        table tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .ipk-box {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        .btn-logout {
+            background: #0E6655;
             color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 22px;
-            font-weight: 700;
-            margin-top: 20px;
+            padding: 8px 18px;
+            text-decoration: none;
+            float: right;
+            border-radius: 4px;
+            font-weight: bold;
         }
-
-        .role-badge {
-            display: inline-block;
-            padding: 7px 20px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 600;
-            color: white;
-            background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
-        }
-
-        /* ===================================== */
-        /* === STYLE FOOTER === */
-        /* ===================================== */
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 14px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        .clear {
+            clear: both;
         }
     </style>
+    <script>
+        function show(id) {
+            document.querySelectorAll('.content').forEach(el => el.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        }
+    </script>
 </head>
 <body>
 
-<div class="container">
+<?php if(!isset($_SESSION['login'])) { ?>
 
-    <!-- BAGIAN DEPAN -->
-    <div class="hero-section">
-        <h1>SIAKAD</h1>
-        <p>Sistem Informasi Akademik | PHP OOP Project</p>
-    </div>
-
-    <!-- MENU NAVIGASI -->
-    <div class="navbar">
-        <a href="#">Dashboard</a>
-        <a href="#">Mahasiswa</a>
-        <a href="#">Mata Kuliah</a>
-        <a href="#">Input Nilai</a>
-        <a href="#">Cetak KHS</a>
-    </div>
-
-    <!-- BOX MENU UTAMA -->
-    <div class="menu-title">Menu Utama</div>
-    <div class="menu-grid">
-        <div class="menu-box">
-            <h3>DATA MAHASISWA</h3>
-        </div>
-        <div class="menu-box">
-            <h3>MATA KULIAH</h3>
-        </div>
-        <div class="menu-box">
-            <h3>INPUT NILAI & HITUNG IPK</h3>
-        </div>
-        <div class="menu-box">
-            <h3>CETAK LAPORAN / KHS</h3>
-        </div>
-    </div>
-
-    <!-- KONTEN DATA -->
-    <div class="content">
-        <?php
-        require_once 'User.php';
-        require_once 'CetakLaporan.php';
-        require_once 'MataKuliah.php';
-        require_once 'Mahasiswa.php';
-        require_once 'Dosen.php';
-
-        // === DATA MAHASISWA 1 ===
-        $mahasiswa1 = new Mahasiswa("Meri Rotun Hasanah", "12345678", 3);
-        $matkul1 = new MataKuliah("Pemrograman Web", 3, 85);
-        $matkul2 = new MataKuliah("Basis Data", 4, 78);
-        $matkul3 = new MataKuliah("Algoritma", 3, 92);
-        $mahasiswa1->tambahMatkul($matkul1);
-        $mahasiswa1->tambahMatkul($matkul2);
-        $mahasiswa1->tambahMatkul($matkul3);
-        $mahasiswa1->cetakLaporan();
-
-        // === DATA MAHASISWA 2 ===
-        $mahasiswa2 = new Mahasiswa("Siti Aminah", "12345679", 3);
-        $matkul4 = new MataKuliah("Pemrograman Web", 3, 90);
-        $matkul5 = new MataKuliah("Basis Data", 4, 88);
-        $matkul6 = new MataKuliah("Algoritma", 3, 85);
-        $mahasiswa2->tambahMatkul($matkul4);
-        $mahasiswa2->tambahMatkul($matkul5);
-        $mahasiswa2->tambahMatkul($matkul6);
-        $mahasiswa2->cetakLaporan();
-
-        // === DATA MAHASISWA 3 ===
-        $mahasiswa3 = new Mahasiswa("Budi Santoso", "12345680", 3);
-        $matkul7 = new MataKuliah("Pemrograman Web", 3, 78);
-        $matkul8 = new MataKuliah("Basis Data", 4, 82);
-        $matkul9 = new MataKuliah("Algoritma", 3, 80);
-        $mahasiswa3->tambahMatkul($matkul7);
-        $mahasiswa3->tambahMatkul($matkul8);
-        $mahasiswa3->tambahMatkul($matkul9);
-        $mahasiswa3->cetakLaporan();
-
-        // === DATA DOSEN ===
-        $dosen1 = new Dosen("Dr. Siti Aminah", "98765432", "Pemrograman Web");
-        $dosen1->cetakLaporan();
-        ?>
-    </div>
-
-    <footer>
-        &copy; <?php echo date('Y'); ?> SIAKAD - Sistem Informasi Akademik
-    </footer>
-
+<!-- HALAMAN LOGIN -->
+<div class="box">
+    <h2 style="color:#16A085; text-align:center;">S I A K A D</h2>
+    <p style="text-align:center;">Sistem Informasi Akademik</p>
+    <hr>
+    <form method="post">
+        <table style="width: auto; margin: 0 auto; border: none;">
+            <tr>
+                <td style="border: none;"><b>Username</b></td>
+                <td style="border: none;"><input type="text" name="username" required style="padding:8px; width:200px;"></td>
+            </tr>
+            <tr>
+                <td style="border: none;"><b>Password</b></td>
+                <td style="border: none;"><input type="password" name="password" required style="padding:8px; width:200px;"></td>
+            </tr>
+            <tr>
+                <td style="border: none;"></td>
+                <td style="border: none;"><input type="submit" name="login" value="LOGIN" style="background:#16A085; color:white; padding:10px 25px; border:none; border-radius:4px; font-weight:bold;"></td>
+            </tr>
+        </table>
+    </form>
 </div>
+
+<?php } else { ?>
+
+<!-- HALAMAN UTAMA -->
+<div class="header">
+    <a href="index.php?logout" class="btn-logout">LOGOUT</a>
+    <h1>SISTEM INFORMASI AKADEMIK</h1>
+    <div class="menu">
+        <a onclick="show('home')">BERANDA</a>
+        <a onclick="show('mahasiswa')">DATA MAHASISWA</a>
+        <a onclick="show('matkul')">MATA KULIAH</a>
+        <a onclick="show('nilai')">REKAP NILAI</a>
+        <a onclick="show('khs')">CETAK KHS</a>
+    </div>
+</div>
+
+<div class="clear"></div>
+
+<div id="home" class="content box">
+    <h2>📚 SELAMAT DATANG</h2>
+    <p>Sistem Informasi Akademik Semester Genap.</p>
+    <p>Silakan klik menu di atas untuk melihat data.</p>
+</div>
+
+<!-- MENU DATA MAHASISWA (PAKAI OOP) -->
+<div id="mahasiswa" class="content box" style="display:none;">
+    <h2>📋 DAFTAR NAMA MAHASISWA</h2>
+    <table>
+        <tr><th>No</th><th>NIM</th><th>Nama Lengkap</th><th>Semester</th></tr>
+        <?php
+        // MEMBUAT OBJEK DARI CLASS MAHASISWA
+        $mhs1 = new Mahasiswa("Meri Rotun Hasanah", "001", "2");
+        $mhs2 = new Mahasiswa("Risqiatul Hasanah", "002", "2");
+        $mhs3 = new Mahasiswa("Siti Aisyah ", "003", "2");
+        $mhs4 = new Mahasiswa("Ameliatus Syarifah", "004", "2");
+        
+        // MEMANGGIL METHOD CETAK
+        echo "<tr><td>1</td>"; $mhs1->cetak();
+        echo "<tr><td>2</td>"; $mhs2->cetak();
+        echo "<tr><td>3</td>"; $mhs3->cetak();
+        echo "<tr><td>4</td>"; $mhs4->cetak();
+        ?>
+    </table>
+</div>
+
+<!-- MENU MATA KULIAH (PAKAI OOP) -->
+<div id="matkul" class="content box" style="display:none;">
+    <h2>📖 DAFTAR MATA KULIAH</h2>
+    <table>
+        <tr><th>No</th><th>Kode</th><th>Nama Mata Kuliah</th><th>SKS</th></tr>
+        <?php
+        $mk1 = new MataKuliah("BD001", "Manajemen Pemasaran Digital", 3);
+        $mk2 = new MataKuliah("AK002", "Akuntansi Dasar", 4);
+        $mk3 = new MataKuliah("TG003", "Pemrograman & Algoritma", 3);
+        $mk4 = new MataKuliah("BS004", "Bahasa Inggris Bisnis", 2);
+        $mk5 = new MataKuliah("MN005", "Manajemen Operasional", 3);
+        
+        echo "<tr><td>1</td>"; $mk1->tampil();
+        echo "<tr><td>2</td>"; $mk2->tampil();
+        echo "<tr><td>3</td>"; $mk3->tampil();
+        echo "<tr><td>4</td>"; $mk4->tampil();
+        echo "<tr><td>5</td>"; $mk5->tampil();
+        ?>
+        <tr><td colspan="3"><b>Total SKS</b></td><td><b>15 SKS</b></td></tr>
+    </table>
+</div>
+
+<!-- MENU REKAP NILAI -->
+<div id="nilai" class="content box" style="display:none;">
+    <h2>📊 REKAPITULASI NILAI</h2>
+    <p><b>Data Nilai Mahasiswa:</b></p>
+    <table>
+        <tr><th>Mata Kuliah</th><th>Nilai Angka</th><th>Nilai Huruf</th><th>Bobot</th></tr>
+        <?php
+        $n1 = new Nilai("Manajemen Pemasaran Digital", 92);
+        $n2 = new Nilai("Akuntansi Dasar", 89);
+        $n3 = new Nilai("Pemrograman & Algoritma", 95);
+        $n4 = new Nilai("Bahasa Inggris Bisnis", 87);
+        $n5 = new Nilai("Manajemen Operasional", 90);
+        
+        echo "<tr><td>{$n1->matkul}</td><td>{$n1->angka}</td><td>{$n1->getHuruf()}</td><td>4.00</td></tr>";
+        echo "<tr><td>{$n2->matkul}</td><td>{$n2->angka}</td><td>{$n2->getHuruf()}</td><td>4.00</td></tr>";
+        echo "<tr><td>{$n3->matkul}</td><td>{$n3->angka}</td><td>{$n3->getHuruf()}</td><td>4.00</td></tr>";
+        echo "<tr><td>{$n4->matkul}</td><td>{$n4->angka}</td><td>{$n4->getHuruf()}</td><td>3.75</td></tr>";
+        echo "<tr><td>{$n5->matkul}</td><td>{$n5->angka}</td><td>{$n5->getHuruf()}</td><td>4.00</td></tr>";
+        ?>
+    </table>
+    <h3 style="text-align:right; margin-top:15px;">IP Semester: <span style="color:#16A085; font-weight:bold;">3.92</span></h3>
+</div>
+
+<!-- MENU CETAK KHS -->
+<div id="khs" class="content box" style="display:none;">
+    <h2 style="text-align:center;">KARTU HASIL STUDI (KHS)</h2>
+    <p style="text-align:center;">Semester II - Tahun Ajaran 2025/2026</p>
+
+    <table style="border:none; margin-bottom:15px;">
+        <tr>
+            <td style="border:none;"><b>Nama</b></td>
+            <td style="border:none;">: Meri Rotun Hasanah</td>
+            <td style="border:none;"><b>Semester</b></td>
+            <td style="border:none;">: 2 (Dua)</td>
+        </tr>
+        <tr>
+            <td style="border:none;"><b>NIM</b></td>
+            <td style="border:none;">: 001</td>
+            <td style="border:none;"><b>T.Ajaran</b></td>
+            <td style="border:none;">: 2025/2026</td>
+        </tr>
+    </table>
+
+    <table>
+        <tr>
+            <th>No</th>
+            <th>Mata Kuliah</th>
+            <th>SKS</th>
+            <th>Nilai</th>
+            <th>Huruf</th>
+            <th>Bobot</th>
+        </tr>
+        <?php
+        // Menggunakan ulang objek Nilai
+        echo "<tr><td>1</td><td>{$n1->matkul}</td><td>3</td><td>{$n1->angka}</td><td>{$n1->getHuruf()}</td><td>4.00</td></tr>";
+        echo "<tr><td>2</td><td>{$n2->matkul}</td><td>4</td><td>{$n2->angka}</td><td>{$n2->getHuruf()}</td><td>4.00</td></tr>";
+        echo "<tr><td>3</td><td>{$n3->matkul}</td><td>3</td><td>{$n3->angka}</td><td>{$n3->getHuruf()}</td><td>4.00</td></tr>";
+        echo "<tr><td>4</td><td>{$n4->matkul}</td><td>2</td><td>{$n4->angka}</td><td>{$n4->getHuruf()}</td><td>3.75</td></tr>";
+        echo "<tr><td>5</td><td>{$n5->matkul}</td><td>3</td><td>{$n5->angka}</td><td>{$n5->getHuruf()}</td><td>4.00</td></tr>";
+        ?>
+    </table>
+
+    <div style="margin-top:20px; text-align:right; font-size:18px;">
+        <p><b>Total SKS : 15</b></p>
+        <p><b>IP Semester : <span style="color:#16A085; font-weight:bold;">3.92</span></b></p>
+        <p><b>Predikat : SANGAT MEMUASKAN</b></p>
+    </div>
+</div>
+
+<?php } ?>
 
 </body>
 </html>
